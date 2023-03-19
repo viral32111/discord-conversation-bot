@@ -1,5 +1,8 @@
 # Discord Conversation Bot
 
+[![CI](https://github.com/viral32111/discord-conversation-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/viral32111/discord-conversation-bot/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/viral32111/discord-conversation-bot/actions/workflows/codeql.yml/badge.svg)](https://github.com/viral32111/discord-conversation-bot/actions/workflows/codeql.yml)
+
 This is a bot for Discord that uses [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) (a.k.a. ChatGPT, GPT 3.5 Turbo) to have conversations with members in a server.
 
 ## Background

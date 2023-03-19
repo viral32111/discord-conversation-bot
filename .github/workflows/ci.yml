@@ -19,7 +19,7 @@ on:
 env:
   ARTIFACT_NAME: Discord-Conversation-Bot
   DOCKER_IMAGE_NAME: discord-conversation-bot
-  DOCKER_REGISTRY_NAME: ghcr.io
+  DOCKER_REGISTRY_DOMAIN: ghcr.io
 
 jobs:
   build:
@@ -119,8 +119,6 @@ jobs:
           pull: true
 
       - name: Delete untagged Docker images
-        if: always()
-        continue-on-error: true
         uses: snok/container-retention-policy@v2
         with:
           image-names: ${{ env.DOCKER_IMAGE_NAME }}

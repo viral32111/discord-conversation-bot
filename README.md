@@ -26,8 +26,8 @@ I simply made this because it seems like every other developer is experimenting 
 
 **This method is only for Linux as I have not created Windows-based Docker images yet!**
 
-1. Download the [latest stable Docker image](#) via `docker image pull ghcr.io/discord-conversation-bot:latest`.
-2. Create a container via `docker container run --name discord-conversation-bot --interactive --tty --restart on-failure ghcr.io/discord-conversation-bot:latest`.
+1. Download the [latest stable Docker image](https://github.com/viral32111/discord-conversation-bot/pkgs/container/discord-conversation-bot) via `docker image pull ghcr.io/discord-conversation-bot:1`.
+2. Create a container via `docker container run --name discord-conversation-bot --interactive --tty --restart on-failure ghcr.io/discord-conversation-bot:1`.
 	* Ensure to add [`--env`](https://docs.docker.com/engine/reference/commandline/run/#env) flags for each of [the required properties](#Configuration), or [create an environment file](https://docs.docker.com/compose/environment-variables/env-file/) and use the `--env-file` flag.
 3. Start the container via `docker container start discord-conversation-bot`.
 4. Use the `/conversation` slash command in your Discord server.

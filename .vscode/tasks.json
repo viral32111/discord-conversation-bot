@@ -1,0 +1,48 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "process",
+			"label": "Clean",
+			"command": "rm",
+			"args": [
+				"--verbose",
+				"--recursive",
+				"--force",
+				"${workspaceFolder}/dist"
+			],
+			"problemMatcher": []
+		},
+		{
+			"type": "typescript",
+			"label": "Build",
+			"tsconfig": "tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"dependsOn": [
+				"Clean"
+			],
+			"group": "build"
+		},
+		{
+			"type": "docker-build",
+			"label": "Docker",
+			"dockerBuild": {
+				"tag": "discord-conversation-bot:latest",
+				"dockerfile": "${workspaceFolder}/Dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true,
+				"buildArgs": {
+					"DOCKER_BUILDKIT": "1"
+				}
+			},
+			"node": {
+				"package": "${workspaceFolder}/package.json"
+			},
+			"dependsOn": [
+				"Build"
+			]
+		}
+	]
+}

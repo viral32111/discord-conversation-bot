@@ -74,7 +74,7 @@ jobs:
             image=moby/buildkit:v0.10.6
 
       - name: Login to GitHub Container Registry
-        if: ${{ github.event_name == 'push' && github.event.pull_request == null }}
+        if: ${{ github.event_name == 'push' && !startsWith( github.ref, 'refs/pull/' ) }}
         uses: docker/login-action@v2
         with:
           registry: ${{ env.DOCKER_REGISTRY_DOMAIN }}
@@ -107,7 +107,7 @@ jobs:
       - name: Build & push Docker image
         uses: docker/build-push-action@v4
         with:
-          push: ${{ github.event_name == 'push' && github.event.pull_request == null }}
+          push: ${{ github.event_name == 'push' && !startsWith( github.ref, 'refs/pull/' ) }}
           file: ./Dockerfile
           context: ./artifact/
           tags: ${{ steps.metadata.outputs.tags }}
@@ -130,7 +130,7 @@ jobs:
     name: Release
     runs-on: ubuntu-22.04
     needs: docker
-    if: ${{ github.event_name == 'push' && github.event.pull_request == null && github.ref_type == 'tag' }}
+    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
     permissions:
       contents: write
     steps:

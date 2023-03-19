@@ -1,0 +1,8 @@
+# NPM packages
+node_modules/
+
+# JavaScript
+dist/
+
+# Environment Variables
+.env

@@ -8,15 +8,43 @@ I simply made this because it seems like every other developer is experimenting 
 
 ## Usage
 
-*TODO*
+**NOTE: [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) is not free, though still quite cheap, and thus requires setting up a recurring billing account.**
+
+### Release
+
+1. Download & extract the [latest stable release](https://github.com/viral32111/discord-conversation-bot/releases/latest).
+2. Open a terminal in the newly created directory.
+3. Install production dependencies via `npm install --omit=dev`.
+4. Create an environment variables file (`.env`) and add [the required properties](#Configuration).
+5. Launch via `node .`.
+6. Use the `/conversation` slash command in your Discord server.
+
+### Docker
+
+**This method is only for Linux as I have not created Windows-based Docker images yet!**
+
+1. Download the [latest stable Docker image](#) via `docker image pull ghcr.io/discord-conversation-bot:latest`.
+2. Create a container via `docker container run --name discord-conversation-bot --interactive --tty --restart on-failure ghcr.io/discord-conversation-bot:latest`.
+	* Ensure to add [`--env`](https://docs.docker.com/engine/reference/commandline/run/#env) flags for each of [the required properties](#Configuration), or [create an environment file](https://docs.docker.com/compose/environment-variables/env-file/) and use the `--env-file` flag.
+3. Start the container via `docker container start discord-conversation-bot`.
+4. Use the `/conversation` slash command in your Discord server.
 
 ## Configuration
 
-*TODO*
+Environment variables are used to configure functionality. The following are required:
+
+* `DISCORD_BOT_TOKEN` should be set to the bot token of your Discord application. Visit the [Discord Developer Portal](https://discord.com/developers/applications) to obtain this.
+* `DISCORD_GUILD_ID` should be set to the ID of your server.
+* `OPENAI_API_KEY` should be set to your [OpenAI account API key](https://platform.openai.com/account/api-keys).
 
 ## Building
 
-*TODO*
+1. Clone this repository via `git clone https://github.com/viral32111/discord-conversation-bot`.
+2. Open a terminal in the repository's directory.
+3. Install production & development dependencies via `npm install`.
+4. Create an environment variables file (`.env`) and add [the required properties](#Configuration).
+5. Launch via `npm start`.
+6. Use the `/conversation` slash command in your Discord server.
 
 ## License
 

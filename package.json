@@ -1,6 +1,6 @@
 {
 	"name": "discord-conversation-bot",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "Discord bot that uses OpenAI's ChatGPT to have conversations with server members.",
 	"main": "./dist/index.js",
 	"type": "module",

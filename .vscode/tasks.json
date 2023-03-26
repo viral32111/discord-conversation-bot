@@ -3,12 +3,23 @@
 	"tasks": [
 		{
 			"type": "process",
-			"label": "Clean",
+			"label": "Clean (Linux)",
 			"command": "rm",
 			"args": [
 				"--verbose",
 				"--recursive",
 				"--force",
+				"${workspaceFolder}/dist"
+			],
+			"problemMatcher": []
+		},
+		{
+			"type": "process",
+			"label": "Clean (Windows)",
+			"command": "Remove-Item",
+			"args": [
+				"-Recurse",
+				"-Path",
 				"${workspaceFolder}/dist"
 			],
 			"problemMatcher": []
@@ -20,17 +31,14 @@
 			"problemMatcher": [
 				"$tsc"
 			],
-			"dependsOn": [
-				"Clean"
-			],
 			"group": "build"
 		},
 		{
 			"type": "docker-build",
-			"label": "Docker",
+			"label": "Docker (Windows)",
 			"dockerBuild": {
-				"tag": "discord-conversation-bot:latest",
-				"dockerfile": "${workspaceFolder}/Dockerfile",
+				"tag": "discord-conversation-bot:local",
+				"dockerfile": "${workspaceFolder}/windows.dockerfile",
 				"context": "${workspaceFolder}",
 				"pull": true,
 				"buildArgs": {
@@ -39,10 +47,23 @@
 			},
 			"node": {
 				"package": "${workspaceFolder}/package.json"
+			}
+		},
+		{
+			"type": "docker-build",
+			"label": "Docker (Ubuntu)",
+			"dockerBuild": {
+				"tag": "discord-conversation-bot:local",
+				"dockerfile": "${workspaceFolder}/ubuntu.dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true,
+				"buildArgs": {
+					"DOCKER_BUILDKIT": "1"
+				}
 			},
-			"dependsOn": [
-				"Build"
-			]
+			"node": {
+				"package": "${workspaceFolder}/package.json"
+			}
 		}
 	]
 }

@@ -1,11 +1,3 @@
-// https://discord.js.org/#/docs/discord.js/main/general/welcome
-// https://discordjs.guide/creating-your-bot/main-file.html
-// https://platform.openai.com/docs/guides/chat
-// https://platform.openai.com/docs/api-reference/chat/create
-// https://www.npmjs.com/package/log4js
-// https://www.npmjs.com/package/dotenv
-// https://www.npmjs.com/package/openai
-
 import { ActivityType, ChannelType, cleanCodeBlockContent, Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from "discord.js"
 import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai"
 import { config as dotenv } from "dotenv"

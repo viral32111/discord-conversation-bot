@@ -49,6 +49,16 @@ Environment variables are used to configure functionality. The following are req
 5. Launch via `npm start`.
 6. Use the `/conversation` slash command in your Discord server.
 
+## Useful Links
+
+* [Discord.js Documentation](https://discord.js.org/#/docs/discord.js/main/general/welcome)
+* [Discord.js Guide](https://discordjs.guide/creating-your-bot/main-file.html)
+* [OpenAI Chat Completion Guide](https://platform.openai.com/docs/guides/chat)
+* [OpenAI Chat API Reference](https://platform.openai.com/docs/api-reference/chat/create)
+* [NPM log4js package](https://www.npmjs.com/package/log4js)
+* [NPM dotenv package](https://www.npmjs.com/package/dotenv)
+* [NPM openai package](https://www.npmjs.com/package/openai)
+
 ## License
 
 Copyright (C) 2023 [viral32111](https://viral32111.com).

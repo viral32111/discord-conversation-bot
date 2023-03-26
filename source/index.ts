@@ -1,60 +1,93 @@
-import { ActivityType, ChannelType, cleanCodeBlockContent, Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from "discord.js"
-import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai"
+// Import third-party packages
+import { ActivityType, Client, GatewayIntentBits, REST, SlashCommandBuilder } from "discord.js"
+import { Configuration, OpenAIApi } from "openai"
 import { config as dotenv } from "dotenv"
-import log4js from "log4js"
+import log4js from "log4js" // Does not support new import syntax
 
+// Import helper functions
+import { ensureEnvironmentVariable } from "./helpers"
+
+// Output log messages to the console
 log4js.configure( {
-	appenders: { default: { type: "console" } },
-	categories: { default: { appenders: [ "default" ], level: "debug" } }
+	appenders: {
+		default: {
+			type: "console"
+		}
+	},
+	categories: {
+		default: {
+			appenders: [ "default" ],
+			level: process.env.NODE_ENV === "production" ? "info" : "debug" // Hide debug messages in production
+		}
+	}
 } )
 
-const logger = log4js.getLogger()
+// Create a logger for this file
+const log = log4js.getLogger( "index" )
 
-logger.debug( "Loading environment variables..." )
-dotenv()
+// Load environment variables from the .env file - only used during development
+log.debug( "Loading environment variables..." )
+const dotenvResult = dotenv()
+if ( dotenvResult.error != undefined || dotenvResult.parsed == undefined ) {
+	log.fatal( "Failed to load environment variables! (%s)", dotenvResult.error )
+	process.exit( 1 )
+}
+log.info( "Loaded %d environment variables.", Object.keys( dotenvResult.parsed ).length )
 
-if ( process.env.DISCORD_BOT_TOKEN == null ) throw new Error( "Environment variable DISCORD_BOT_TOKEN is not set" )
-if ( process.env.DISCORD_GUILD_ID == null ) throw new Error( "Environment variable DISCORD_GUILD_ID is not set" )
-if ( process.env.OPENAI_API_KEY == null ) throw new Error( "Environment variable OPENAI_API_KEY is not set" )
+// Check all the required environment variables are set
+log.debug( "Checking environment variables..." )
+const DISCORD_BOT_TOKEN = ensureEnvironmentVariable( "DISCORD_BOT_TOKEN" )
+const OPENAI_API_KEY = ensureEnvironmentVariable( "OPENAI_API_KEY" )
+log.debug( "All environment variables are present." )
 
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
-const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY
-
-const openAI = new OpenAIApi( new Configuration( {
+// Create an OpenAI API client
+log.debug( "Creating OpenAI API client..." )
+export const openAI = new OpenAIApi( new Configuration( {
 	apiKey: OPENAI_API_KEY,
 } ) )
+log.info( "Created OpenAI API client." )
 
-logger.debug( "Creating Discord client..." )
-const client = new Client( {
+// Setup the Discord client
+log.debug( "Setting up Discord client..." )
+export const discordClient = new Client( {
+
+	// Only receive guild events & message content
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildMembers,
 		GatewayIntentBits.MessageContent
 	],
+
+	// Prevent mentioning anyone
 	allowedMentions: {
 		repliedUser: false,
-		parse: [],
+		parse: []
 	},
+
+	// Custom status
 	presence: {
 		status: "online",
 		activities: [ {
 			type: ActivityType.Playing,
-			name: "with OpenAI's ChatGPT",
+			name: "with OpenAI's ChatGPT"
 		} ]
 	}
+
 } )
-logger.debug( "Created Discord client." )
+log.info( "Setup Discord client." )
 
-logger.debug( "Creating REST client..." )
-const rest = new REST( {
-	version: "10"
-} ).setToken( DISCORD_BOT_TOKEN )
-logger.debug( "Created REST client." )
+// Create a Discord API client
+log.debug( "Creating Discord RESTful API client..." )
+const discordAPIVersion = ( discordClient.options.ws?.version ?? 10 ).toString()
+export const discordAPI = new REST( {
+	version: discordAPIVersion
+} )
+log.info( "Created Discord RESTful API client (v%d).", discordAPIVersion )
 
-logger.debug( "Creating slash commands..." )
-const slashCommands = [
+// Create a global slash command
+log.debug( "Creating slash commands..." )
+export const slashCommands = [
 	new SlashCommandBuilder()
 		.setName( "conversation" )
 		.setDescription( "Shows this help message." )
@@ -93,183 +126,23 @@ const slashCommands = [
 			.setName( "reset" )
 			.setDescription( "Forget the conversation & start over." )
 		)
-		.toJSON(),
+		.toJSON()
 ]
-logger.debug( "Created slash commands." )
+log.debug( "Created slash commands." )
 
-client.once( Events.ClientReady, async ( client ) => {
-	logger.info( "Ready as '%s'!", client.user.tag )
+// Login to Discord
+log.debug( "Logging in to Discord..." )
+discordAPI.setToken( DISCORD_BOT_TOKEN )
+discordClient.login( DISCORD_BOT_TOKEN )
+log.info( "Logged in to Discord." )
 
-	logger.debug( "Deleting slash commands..." )
-	await rest.put( Routes.applicationGuildCommands( client.user.id, DISCORD_GUILD_ID ), { body: [] } )
-	await rest.put( Routes.applicationCommands( client.user.id ), { body: [] } )
-	logger.debug( "Deleted slash commands." )
+// Stop the application on CTRL+C
+const stopGracefully = () => {
+	log.debug( "Logging out from Discord..." )
+	discordClient.destroy()
+	log.info( "Logged out from Discord." )
 
-	logger.debug( "Registering slash commands..." )
-	await rest.put( Routes.applicationGuildCommands( client.user.id, DISCORD_GUILD_ID ), {
-		body: slashCommands
-	} )
-	logger.info( "Registered slash commands." )
-
-} )
-
-interface Conversation {
-	systemPrompt: string,
-	sampleTemperature: number,
-	presencePenalty: number,
-	frequencyPenalty: number,
-	messageHistory: ChatCompletionRequestMessage[]
+	process.exit( 0 )
 }
-
-const conversations: Map<string, Conversation> = new Map()
-
-client.on( Events.MessageCreate, async ( message ) => {
-	if ( message.author.bot || message.author.system ) return
-	if ( !message.channel.isThread() ) return
-
-	if ( message.cleanContent.startsWith( "!" ) == true ) return
-
-	if ( !conversations.has( message.channel.id ) ) return
-	const conversation = conversations.get( message.channel.id )!
-
-	logger.info( "Message '%s' in thread '%s' from user '%s'.", message.cleanContent, message.channel.id, message.author.tag )
-
-	await message.channel.sendTyping();
-	logger.debug( "Started typing in thread '%s'.", message.channel.id )
-
-	conversation.messageHistory.push( {
-		role: "user",
-		content: `${ message.author.username }: ${ message.cleanContent }`,
-	} )
-	logger.debug( "Added message to channel history for thread '%s'.", message.channel.id )
-
-	try {
-		logger.debug( "Generating chat completion..." )
-		const chatCompletion = await openAI.createChatCompletion( {
-			model: "gpt-3.5-turbo",
-			messages: conversation.messageHistory,
-			temperature: conversation.sampleTemperature,
-			presence_penalty: conversation.presencePenalty,
-			frequency_penalty: conversation.frequencyPenalty,
-			user: message.author.id,
-			max_tokens: 1024,
-			n: 1
-		} )
-		logger.debug( "Generated chat completion." )
-
-		let completionMessage = chatCompletion.data.choices[ 0 ].message?.content?.trim()
-		if ( completionMessage == null ) throw new Error( "No completion message found!" )
-
-		conversation.messageHistory.push( {
-			role: "assistant",
-			content: completionMessage,
-		} )
-		logger.debug( "Added chat completion to message history." )
-
-		await message.reply( completionMessage )
-		logger.info( "Generated chat completion '%s'.", completionMessage )
-
-	} catch ( error ) {
-		logger.error( "Failed to generate chat completion: '%s'", error )
-		await message.react( "😔" )
-	}
-
-} )
-
-client.on( Events.InteractionCreate, async ( interaction ) => {
-	if ( !interaction.isChatInputCommand() ) return
-
-	if ( !interaction.inGuild() ) return
-	if ( !interaction.channel?.isTextBased() ) return
-
-	if ( interaction.commandName != "conversation" ) return
-
-	logger.info( "Interaction '%s' (%s) from member '%s'.", interaction.commandName, interaction.id, interaction.user.tag )
-
-	if ( interaction.options.getSubcommand() == "start" ) {
-		const defer = await interaction.deferReply( { ephemeral: true } )
-		logger.debug( "Deferring reply to interaction '%s'.", interaction.commandName )
-
-		if ( interaction.channel.type == ChannelType.GuildText ) {
-			const thread = await interaction.channel.threads.create( {
-				name: `${ interaction.member.user.username }'s conversation`,
-				type: ChannelType.PublicThread,
-				autoArchiveDuration: 60,
-			} )
-			logger.debug( "Created thread '%s' (%s).", thread.name, thread.id )
-
-			conversations.set( thread.id, {
-				systemPrompt: interaction.options.getString( "prompt" ) ?? [
-					`You are a bot on Discord, your name is Suimin.`,
-					"You are talking to multiple humans, their names will prefix their messages in the format 'Name: Message' to help you distinguish them. You should NOT prefix your messages with your name.",
-					"You are not an assistant. Your goal is to maintain a casual conversation with the humans.",
-					`Today's date is ${ new Date().toLocaleDateString( "en-GB" ) }.`
-				].join( " " ),
-				sampleTemperature: interaction.options.getNumber( "temperature" ) ?? 1.0,
-				presencePenalty: interaction.options.getNumber( "presence" ) ?? 0.0,
-				frequencyPenalty: interaction.options.getNumber( "frequency" ) ?? 0.0,
-				messageHistory: []
-			} )
-			const conversation = conversations.get( thread.id )!
-			conversation.messageHistory.push( { role: "system", content: conversation.systemPrompt } )
-			logger.debug( "Initialised conversation for thread '%s'.", thread.name )
-
-			logger.debug( "Prompt: '%s'.", conversation.systemPrompt )
-			logger.debug( "Sample Temperature: '%d'.", conversation.sampleTemperature )
-			logger.debug( "Presence Penalty: '%d'.", conversation.presencePenalty )
-			logger.debug( "Frequency Penalty: '%d'.", conversation.frequencyPenalty )
-
-			await thread.send( `System Prompt: \`\`\`${ cleanCodeBlockContent( conversation.systemPrompt ) }\`\`\`\nSample Temperature: \`${ conversation.sampleTemperature }\`\nPresence Penalty: \`${ conversation.presencePenalty }\`\nFrequency Pelanty: \`${ conversation.frequencyPenalty }\`` )
-			logger.debug( "Sent opening message in thread '%s'.", thread.name )
-
-			await thread.members.add( interaction.member.user.id )
-			logger.debug( "Added member '%s' to thread '%s'.", interaction.user.tag, thread.name )
-
-			await defer.edit( { content: `Created <#${ thread.id }> for the conversation.` } )
-			logger.info( "Member '%s' started conversation in thread '%s'.", interaction.user.tag, thread.name )
-
-		} else {
-			await defer.edit( { content: "This command is only usable in a text channel." } )
-			logger.warn( "Member '%s' attempted to start conversation while not in a text channel!", interaction.user.tag )
-		}
-
-	} else if ( interaction.options.getSubcommand() == "reset" ) {
-		if ( interaction.channel.isThread() ) {
-			if ( conversations.has( interaction.channel.id ) ) {
-				const conversation = conversations.get( interaction.channel.id )!
-				const prompt = conversation.messageHistory[ 0 ]
-				conversation.messageHistory = [ prompt ]
-				logger.debug( "Cleared message history for thread '%s'.", interaction.channel.name )
-
-				await interaction.reply( "Conversation reset." )
-				logger.info( "Member '%s' reset conversation in thread '%s'", interaction.user.tag, interaction.channel.name )
-
-			} else {
-				await interaction.reply( { content: "This thread is not a conversation.", ephemeral: true } )
-				logger.warn( "Member '%s' attempted to reset non-existant conversation in thread '%s'!", interaction.user.tag, interaction.channel.name )
-			}
-
-		} else {
-			await interaction.reply( { content: "This command is only usable from within a conversation thread.", ephemeral: true } )
-			logger.warn( "Member '%s' attempted to reset conversation while not in a thread!", interaction.user.tag )
-		}
-
-	} else {
-		await interaction.reply( { content: "Unrecognised command.", ephemeral: true } )
-		logger.warn( "Member '%s' ran unrecognised sub-command '%s'!", interaction.user.tag, interaction.options.getSubcommand() )
-	}
-
-} )
-
-logger.info( "Logging in..." )
-client.login( DISCORD_BOT_TOKEN )
-logger.debug( "Logged in." )
-
-const shutdown = () => {
-	logger.info( "Logging out..." )
-	client.destroy()
-	logger.debug( "Logged out." )
-}
-
-process.once( "SIGINT", shutdown )
-process.once( "SIGTERM", shutdown )
+process.once( "SIGINT", stopGracefully )
+process.once( "SIGTERM", stopGracefully )

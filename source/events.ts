@@ -4,7 +4,7 @@ import { ChatCompletionRequestMessage } from "openai"
 import log4js from "log4js" // Does not support new import syntax
 
 // Import required variables
-import { discordClient, discordAPI, openAI, slashCommands } from "./index"
+import { discordClient, discordAPI, openAI, slashCommands } from "./index.js"
 
 // Create a logger for this file
 const log = log4js.getLogger( "events" )

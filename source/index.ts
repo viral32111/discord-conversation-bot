@@ -5,7 +5,7 @@ import { config as dotenv } from "dotenv"
 import log4js from "log4js" // Does not support new import syntax
 
 // Import helper functions
-import { ensureEnvironmentVariable } from "./helpers"
+import { ensureEnvironmentVariable } from "./helpers.js"
 
 // Output log messages to the console
 log4js.configure( {
@@ -26,13 +26,13 @@ log4js.configure( {
 const log = log4js.getLogger( "index" )
 
 // Load environment variables from the .env file - only used during development
-log.debug( "Loading environment variables..." )
+log.debug( "Loading environment variables file..." )
 const dotenvResult = dotenv()
 if ( dotenvResult.error != undefined || dotenvResult.parsed == undefined ) {
-	log.fatal( "Failed to load environment variables! (%s)", dotenvResult.error )
-	process.exit( 1 )
+	log.debug( "Failed to load environment variables file! (%s)", dotenvResult.error?.message )
+} else {
+	log.debug( "Loaded %d environment variables.", Object.keys( dotenvResult.parsed ).length )
 }
-log.info( "Loaded %d environment variables.", Object.keys( dotenvResult.parsed ).length )
 
 // Check all the required environment variables are set
 log.debug( "Checking environment variables..." )

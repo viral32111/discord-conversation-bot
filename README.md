@@ -36,8 +36,8 @@ I simply made this because it seems like every other developer is experimenting 
 
 Environment variables are used to configure functionality. The following are required:
 
-* `DISCORD_BOT_TOKEN` should be set to the bot token of your Discord application. Visit the [Discord Developer Portal](https://discord.com/developers/applications) to obtain this.
-* ~~`DISCORD_GUILD_ID` should be set to the ID of your server.~~
+* `DISCORD_BOT_TOKEN` should be set to the [bot token of your Discord application](https://discord.com/developers/applications).
+* ~~`DISCORD_GUILD_ID` should be set to the ID of your server.~~ *Removed in version 1.1.0.*
 * `OPENAI_API_KEY` should be set to your [OpenAI account API key](https://platform.openai.com/account/api-keys).
 
 ## Building

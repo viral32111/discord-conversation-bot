@@ -53,10 +53,20 @@ jobs:
 
   docker:
     name: Docker
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.runner }}
     needs: build
+    strategy:
+      matrix:
+        name: [ 'Ubuntu', 'Windows' ]
+        include:
+          - name: Ubuntu
+            runner: ubuntu-22.04
+            dockerfile: ubuntu.dockerfile
+          - name: Windows
+            runner: windows-2019
+            dockerfile: windows.dockerfile
     concurrency:
-      group: docker
+      group: docker-${{ matrix.name }}
       cancel-in-progress: true
     permissions:
       contents: read
@@ -108,7 +118,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) }}
-          file: ./Dockerfile
+          file: ${{ matrix.dockerfile }}
           context: ./artifact/
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
@@ -121,7 +131,7 @@ jobs:
         with:
           image-names: ${{ env.DOCKER_IMAGE_NAME }}
           cut-off: 0 seconds ago UTC
-          keep-at-least: 1
+          keep-at-least: 0
           untagged-only: true
           account-type: personal
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN_PACKAGES }}

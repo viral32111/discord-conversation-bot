@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+# docker buildx build --file ./ubuntu.dockerfile --tag discord-conversation-bot:local ./
 
 # Start from my Node.js image (Ubuntu-based)
 FROM ghcr.io/viral32111/nodejs:19-ubuntu

@@ -1,0 +1,23 @@
+# GitHub
+.github/
+.git/
+.gitignore
+
+# Visual Studio Code
+.vscode/
+
+# NPM packages
+node_modules/
+tsconfig.json
+.eslintrc.json
+
+# TypeScript
+source/
+
+# Environment Variables
+.env
+
+# Metadata
+README.md
+SECURITY.md
+LICENSE.txt

@@ -3,8 +3,10 @@
 ![GitHub CI workflow status](https://img.shields.io/github/actions/workflow/status/viral32111/discord-conversation-bot/ci.yml?label=CI)
 ![GitHub CodeQL workflow status](https://img.shields.io/github/actions/workflow/status/viral32111/discord-conversation-bot/codeql.yml?label=CodeQL)
 ![GitHub repository size](https://img.shields.io/github/repo-size/viral32111/discord-conversation-bot?label=Size)
-![GitHub release downloads](https://img.shields.io/github/downloads/viral32111/discord-conversation-bot/total?label=Downloads)
 ![GitHub latest release](https://img.shields.io/github/v/release/viral32111/discord-conversation-bot?label=Latest%20Release)
+![GitHub release downloads](https://img.shields.io/github/downloads/viral32111/discord-conversation-bot/total?label=Downloads)
+![GitHub release date](https://img.shields.io/github/release-date/viral32111/discord-conversation-bot?label=Release%20Date)
+![GitHub last commit](https://img.shields.io/github/last-commit/viral32111/discord-conversation-bot?label=Latest%20Update)
 
 This is a bot for Discord that uses [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) (a.k.a. ChatGPT, GPT 3.5 Turbo) to have conversations with members in a server.
 

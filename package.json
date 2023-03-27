@@ -7,7 +7,7 @@
 	"scripts": {
 		"start": "npx tsc && node ."
 	},
-	"keywords": [ "discord", "bot", "chatgpt", "openai" ],
+	"keywords": [ "discord", "bot", "openai", "chatgpt", "gpt-4" ],
 	"author": "viral32111",
 	"license": "AGPL-3.0-only",
 	"private": false,

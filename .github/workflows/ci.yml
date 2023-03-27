@@ -171,8 +171,8 @@ jobs:
         if: ${{ matrix.name == 'Windows' && github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) }}
         run: docker image push --all-tags ${{ env.DOCKER_REGISTRY_DOMAIN }}/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}
 
-  Maintenence:
-    name: Maintenence
+  maintenance:
+    name: Maintenance
     runs-on: ubuntu-22.04
     needs: docker
     permissions:
@@ -225,7 +225,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-22.04
-    needs: clean
+    needs: maintenance
     if: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) && github.ref_type == 'tag' }}
     permissions:
       contents: read

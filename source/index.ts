@@ -70,7 +70,7 @@ export const discordClient = new Client( {
 		status: "online",
 		activities: [ {
 			type: ActivityType.Playing,
-			name: "with OpenAI's ChatGPT"
+			name: "with OpenAI's GPT-4"
 		} ]
 	}
 
@@ -99,6 +99,13 @@ export const slashCommands = [
 				.setDescription( "The context to initalise the conversation with." )
 				.setRequired( false )
 				.setMaxLength( 400 )
+			)
+			.addStringOption( option => option
+				.setName( "model" )
+				.setDescription( "The model to use for the conversation." )
+				.addChoices( { name: "GPT-3.5", value: "gpt-3.5-turbo" } )
+				.addChoices( { name: "GPT-4", value: "gpt-4" } )
+				.setRequired( false )
 			)
 			.addNumberOption( option => option
 				.setName( "temperature" )

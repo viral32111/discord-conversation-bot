@@ -11,6 +11,7 @@ const log = log4js.getLogger( "events" )
 
 // Information about a chat conversation
 interface Conversation {
+	modelIdentifier: string,
 	systemPrompt: string,
 	sampleTemperature: number,
 	presencePenalty: number,
@@ -64,7 +65,7 @@ discordClient.on( Events.MessageCreate, async ( message ) => {
 	try {
 		log.debug( "Generating chat completion for message %d...", conversation.messageHistory.length )
 		const chatCompletion = await openAI.createChatCompletion( {
-			model: "gpt-3.5-turbo",
+			model: conversation.modelIdentifier,
 			messages: conversation.messageHistory,
 			temperature: conversation.sampleTemperature,
 			presence_penalty: conversation.presencePenalty,
@@ -141,8 +142,11 @@ discordClient.on( Events.InteractionCreate, async ( interaction ) => {
 			// Store this conversation's information
 			conversations.set( thread.id, {
 
-				// Tune the chat completion responses
+				// Model & context
+				modelIdentifier: interaction.options.getString( "model" ) ?? "gpt-3.5-turbo", // Default to GPT-3.5
 				systemPrompt: systemPrompt,
+
+				// Tune the responses
 				sampleTemperature: interaction.options.getNumber( "temperature" ) ?? 1.0,
 				presencePenalty: interaction.options.getNumber( "presence" ) ?? 0.0,
 				frequencyPenalty: interaction.options.getNumber( "frequency" ) ?? 0.0,
@@ -157,13 +161,20 @@ discordClient.on( Events.InteractionCreate, async ( interaction ) => {
 
 			// Show the conversation information
 			const conversation = conversations.get( thread.id )!
-			log.debug( "Prompt: '%s'.", conversation.systemPrompt )
+			log.debug( "Model Identifier: '%s'.", conversation.modelIdentifier )
+			log.debug( "System Prompt: '%s'.", conversation.systemPrompt )
 			log.debug( "Sample Temperature: '%d'.", conversation.sampleTemperature )
 			log.debug( "Presence Penalty: '%d'.", conversation.presencePenalty )
 			log.debug( "Frequency Penalty: '%d'.", conversation.frequencyPenalty )
 
 			// Send an opening message in the thread containing the conversation's information
-			await thread.send( `System Prompt: \`\`\`${ cleanCodeBlockContent( conversation.systemPrompt ) }\`\`\`\nSample Temperature: \`${ conversation.sampleTemperature }\`\nPresence Penalty: \`${ conversation.presencePenalty }\`\nFrequency Pelanty: \`${ conversation.frequencyPenalty }\`` )
+			await thread.send( [
+				`Model Identifier: \`${ conversation.modelIdentifier }\``,
+				`System Prompt: \`\`\`${ cleanCodeBlockContent( conversation.systemPrompt ) }\`\`\``,
+				`Sample Temperature: \`${ conversation.sampleTemperature }\``,
+				`Presence Penalty: \`${ conversation.presencePenalty }\``,
+				`Frequency Pelanty: \`${ conversation.frequencyPenalty }\``
+			].join( "\n" ) )
 			log.debug( "Sent opening message in conversation thread '%s' (%s).", thread.name, thread.id )
 
 			// Add the member to the thread

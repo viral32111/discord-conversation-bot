@@ -12,7 +12,9 @@
 			"outFiles": [
 				"${workspaceFolder}/**/*.js"
 			],
-			"preLaunchTask": "Build"
+			"preLaunchTask": "Build",
+			"console": "internalConsole",
+			"internalConsoleOptions": "openOnSessionStart"
 		}
 	]
 }

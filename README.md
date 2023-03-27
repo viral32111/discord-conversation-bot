@@ -8,7 +8,9 @@
 ![GitHub release date](https://img.shields.io/github/release-date/viral32111/discord-conversation-bot?label=Release%20Date)
 ![GitHub last commit](https://img.shields.io/github/last-commit/viral32111/discord-conversation-bot?label=Latest%20Update)
 
-This is a bot for Discord that uses [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) (a.k.a. ChatGPT, GPT 3.5 Turbo) to have conversations with members in a server.
+This is a bot for Discord that uses [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) (a.k.a. ChatGPT) to have conversations with members in a server.
+
+Model support currently includes [GPT-3.5](https://platform.openai.com/docs/models/gpt-3-5) (`gpt-3.5-turbo`) and [GPT-4](https://platform.openai.com/docs/models/gpt-4) (`gpt-4`).
 
 ## Background
 
@@ -17,6 +19,8 @@ I simply made this because it seems like every other developer is experimenting 
 ## Usage
 
 **NOTE: [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) is not free, though still quite cheap, and thus requires setting up a recurring billing account.**
+
+**NOTE: The [GPT-4](https://platform.openai.com/docs/models/gpt-4) model is currently in a limited beta, if you have not been granted access then your Discord server members will only be able to use the [GPT-3.5](https://platform.openai.com/docs/models/gpt-3-5) model.**
 
 ### Release
 
@@ -29,11 +33,10 @@ I simply made this because it seems like every other developer is experimenting 
 
 ### Docker
 
-**This method is only for Linux as I have not created Windows-based Docker images yet!**
-
-1. Download the [latest stable Docker image](https://github.com/viral32111/discord-conversation-bot/pkgs/container/discord-conversation-bot) via `docker image pull ghcr.io/discord-conversation-bot:1`.
-2. Create a container via `docker container run --name discord-conversation-bot --interactive --tty --restart on-failure ghcr.io/discord-conversation-bot:1`.
+1. Download the [latest stable Docker image](https://github.com/viral32111/discord-conversation-bot/pkgs/container/discord-conversation-bot) for your platform.
+2. Create a container via `docker container create --name discord-conversation-bot --interactive --tty --restart on-failure ghcr.io/discord-conversation-bot`.
 	* Ensure to add [`--env`](https://docs.docker.com/engine/reference/commandline/run/#env) flags for each of [the required properties](#Configuration), or [create an environment file](https://docs.docker.com/compose/environment-variables/env-file/) and use the `--env-file` flag.
+	* Ensure to append the appropriate tag for your platform to the image name (e.g., `:latest-ubuntu-amd64`, `:latest-windows-amd64`, etc.)
 3. Start the container via `docker container start discord-conversation-bot`.
 4. Use the `/conversation` slash command in your Discord server.
 

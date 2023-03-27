@@ -65,7 +65,7 @@ jobs:
             platform: linux/amd64
             suffix: ubuntu
           - name: Windows
-            runner: windows-2019
+            runner: windows-2022
             dockerfile: windows.dockerfile
             platform: windows/amd64
             suffix: windows

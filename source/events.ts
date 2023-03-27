@@ -1,10 +1,10 @@
 // Import third-party packages
-import { CacheType, ChannelType, cleanCodeBlockContent, Client, Events, Interaction, Message, Routes } from "discord.js"
+import { CacheType, ChannelType, cleanCodeBlockContent, Client, Interaction, Message, Routes } from "discord.js"
 import { ChatCompletionRequestMessage } from "openai"
 import log4js from "log4js" // Does not support new import syntax
 
 // Import required variables
-import { discordClient, discordAPI, openAI, slashCommands } from "./index.js"
+import { discordAPI, openAI, slashCommands } from "./index.js"
 
 // Create a logger for this file
 const log = log4js.getLogger( "events" )

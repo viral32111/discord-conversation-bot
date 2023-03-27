@@ -1,11 +1,12 @@
 // Import third-party packages
-import { ActivityType, Client, GatewayIntentBits, REST, SlashCommandBuilder } from "discord.js"
+import { ActivityType, Client, Events, GatewayIntentBits, REST, SlashCommandBuilder } from "discord.js"
 import { Configuration, OpenAIApi } from "openai"
 import { config as dotenv } from "dotenv"
 import log4js from "log4js" // Does not support new import syntax
 
-// Import helper functions
+// Import helper functions & event handlers
 import { ensureEnvironmentVariable } from "./helpers.js"
+import { onInteraction, onMessage, onReady } from "./events.js"
 
 // Output log messages to the console
 log4js.configure( {
@@ -136,6 +137,13 @@ export const slashCommands = [
 		.toJSON()
 ]
 log.debug( "Created slash commands." )
+
+// Register events
+log.debug( "Registering event handlers..." )
+discordClient.once( Events.ClientReady, onReady )
+discordClient.on( Events.MessageCreate, onMessage )
+discordClient.on( Events.InteractionCreate, onInteraction )
+log.info( "Registered event handlers." )
 
 // Login to Discord
 log.debug( "Logging in to Discord..." )

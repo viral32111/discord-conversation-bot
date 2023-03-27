@@ -1,5 +1,5 @@
 // Import third-party packages
-import { ChannelType, cleanCodeBlockContent, Events, Routes } from "discord.js"
+import { CacheType, ChannelType, cleanCodeBlockContent, Client, Events, Interaction, Message, Routes } from "discord.js"
 import { ChatCompletionRequestMessage } from "openai"
 import log4js from "log4js" // Does not support new import syntax
 
@@ -23,7 +23,7 @@ interface Conversation {
 const conversations: Map<string, Conversation> = new Map()
 
 // When the Discord client is ready...
-discordClient.once( Events.ClientReady, async ( client ) => {
+export const onReady = async ( client: Client<true> ) => {
 
 	// Introduce ourself
 	log.info( "Ready as '%s'!", client.user.tag )
@@ -35,10 +35,10 @@ discordClient.once( Events.ClientReady, async ( client ) => {
 	} )
 	log.info( "Registered slash commands." )
 
-} )
+}
 
 // When the Discord client receives a message...
-discordClient.on( Events.MessageCreate, async ( message ) => {
+export const onMessage = async ( message: Message<boolean> ) => {
 
 	// Ignore messages from bots, not in thread, or beginning with the ignore prefix
 	if ( message.author.bot || message.author.system ) return
@@ -98,10 +98,10 @@ discordClient.on( Events.MessageCreate, async ( message ) => {
 		await message.react( "😔" )
 	}
 
-} )
+}
 
 // When the Discord client receives an interaction...
-discordClient.on( Events.InteractionCreate, async ( interaction ) => {
+export const onInteraction = async ( interaction: Interaction<CacheType> ) => {
 
 	// Ignore interactions that are not slash commands, not from a guild, or not in a text channel
 	if ( !interaction.isChatInputCommand() ) return
@@ -161,16 +161,16 @@ discordClient.on( Events.InteractionCreate, async ( interaction ) => {
 
 			// Show the conversation information
 			const conversation = conversations.get( thread.id )!
-			log.debug( "Model Identifier: '%s'.", conversation.modelIdentifier )
 			log.debug( "System Prompt: '%s'.", conversation.systemPrompt )
+			log.debug( "Model Identifier: '%s'.", conversation.modelIdentifier )
 			log.debug( "Sample Temperature: '%d'.", conversation.sampleTemperature )
 			log.debug( "Presence Penalty: '%d'.", conversation.presencePenalty )
 			log.debug( "Frequency Penalty: '%d'.", conversation.frequencyPenalty )
 
 			// Send an opening message in the thread containing the conversation's information
 			await thread.send( [
-				`Model Identifier: \`${ conversation.modelIdentifier }\``,
 				`System Prompt: \`\`\`${ cleanCodeBlockContent( conversation.systemPrompt ) }\`\`\``,
+				`Model Identifier: \`${ conversation.modelIdentifier }\``,
 				`Sample Temperature: \`${ conversation.sampleTemperature }\``,
 				`Presence Penalty: \`${ conversation.presencePenalty }\``,
 				`Frequency Pelanty: \`${ conversation.frequencyPenalty }\``
@@ -228,4 +228,4 @@ discordClient.on( Events.InteractionCreate, async ( interaction ) => {
 		log.warn( "Member '%s' (%s) ran unrecognised sub-command '%s' (%s)!", interaction.user.tag, interaction.user.id, interaction.options.getSubcommand(), interaction.id )
 	}
 
-} )
+}

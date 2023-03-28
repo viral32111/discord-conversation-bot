@@ -228,7 +228,7 @@ jobs:
     needs: maintenance
     if: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) && github.ref_type == 'tag' }}
     permissions:
-      contents: read
+      contents: write
     steps:
       - name: Clone repository
         uses: actions/checkout@v3

@@ -59,7 +59,7 @@ jobs:
       - name: Lint
         run: npx eslint
 
-      - name: Compile TypeScript
+      - name: Build
         run: npx tsc
 
       - name: Upload build artifact
@@ -85,16 +85,12 @@ jobs:
             platform: linux
             architecture: amd64
             suffix: ubuntu
-
           - name: Windows
             runner: windows-2022
             dockerfile: windows.dockerfile
             platform: windows
             architecture: amd64
             suffix: windows
-    concurrency:
-      group: ${{ github.job }}-${{ matrix.name }}
-      cancel-in-progress: true
     permissions:
       contents: read
       packages: write
@@ -247,8 +243,8 @@ jobs:
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true          
           tag_name: ${{ github.ref_name }}
-          draft: true
-          files: ./${{ env.ARTIFACT_NAME }}.zip
           body: ${{ github.ref_name }}
+          files: ./${{ env.ARTIFACT_NAME }}.zip          
+          token: ${{ secrets.GITHUB_TOKEN }}

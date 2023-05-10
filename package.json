@@ -5,7 +5,8 @@
 	"main": "./dist/index.js",
 	"type": "module",
 	"scripts": {
-		"start": "npx tsc && node ."
+		"start": "npx tsc && node .",
+		"build": "npx tsc --build --clean && npx tsc"
 	},
 	"keywords": [ "discord", "bot", "openai", "chatgpt", "gpt-4" ],
 	"author": "viral32111",

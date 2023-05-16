@@ -103,14 +103,16 @@ export const onMessage = async ( message: Message<boolean> ) => {
 // When the Discord client receives an interaction...
 export const onInteraction = async ( interaction: Interaction<CacheType> ) => {
 
-	// Ignore interactions that are not slash commands, not from a guild, or not in a text channel
+	// Ignore interactions that are not slash commands and are not in a text channel
 	if ( !interaction.isChatInputCommand() ) return
-	if ( !interaction.inGuild() ) return
 	if ( !interaction.channel?.isTextBased() ) return
+
+	// The channel name is the recipient's name if it is a DM
+	const channelName = interaction.channel.isDMBased() ? `${ interaction.channel.recipient?.username ?? "Unknown" }#${ interaction.channel.recipient?.discriminator ?? "0000" }` : interaction.channel.name
 
 	// Ignore interactions that are not our conversation slash command
 	if ( interaction.commandName != "conversation" ) return
-	log.info( "Interaction '%s' (%s) from member '%s' (%s) in channel '%s' (%s).", interaction.commandName, interaction.id, interaction.user.tag, interaction.user.id, interaction.channel.name, interaction.channel.id )
+	log.info( "Interaction '%s' (%s) from user '%s' (%s) in channel '%s' (%s).", interaction.commandName, interaction.id, interaction.user.tag, interaction.user.id, channelName, interaction.channel.id )
 
 	// If it is the start conversation command...
 	if ( interaction.options.getSubcommand() == "start" ) {
@@ -119,17 +121,17 @@ export const onInteraction = async ( interaction: Interaction<CacheType> ) => {
 		const defer = await interaction.deferReply( { ephemeral: true } )
 		log.debug( "Deferring reply to interaction '%s'.", interaction.commandName )
 
-		// Ensure we are not in a thread...
-		if ( interaction.channel.type == ChannelType.GuildText ) {
+		// Are we in a server text channel?
+		if ( interaction.inGuild() && interaction.channel.type == ChannelType.GuildText ) {
 
 			// Create a thread for the conversation
-			log.debug( "Creating conversation thread for member '%s' (%s)", interaction.user.tag, interaction.user.id )
+			log.debug( "Creating conversation thread for user '%s' (%s)", interaction.user.tag, interaction.user.id )
 			const thread = await interaction.channel.threads.create( {
 				name: `${ interaction.member.user.username }'s conversation`,
 				type: ChannelType.PublicThread,
 				autoArchiveDuration: 60
 			} )
-			log.debug( "Created conversation thread '%s' (%s) for member '%s' (%s).", thread.name, thread.id, interaction.user.tag, interaction.user.id )
+			log.debug( "Created conversation thread '%s' (%s) for user '%s' (%s).", thread.name, thread.id, interaction.user.tag, interaction.user.id )
 
 			// Prompt for the chat completion, decent default if none provided
 			const systemPrompt = interaction.options.getString( "prompt" ) ?? [
@@ -179,23 +181,33 @@ export const onInteraction = async ( interaction: Interaction<CacheType> ) => {
 
 			// Add the member to the thread
 			await thread.members.add( interaction.member.user.id )
-			log.debug( "Added member '%s' (%s) to conversation thread '%s' (%s).", interaction.user.tag, interaction.user.id, thread.name, thread.id )
+			log.debug( "Added user '%s' (%s) to conversation thread '%s' (%s).", interaction.user.tag, interaction.user.id, thread.name, thread.id )
 
 			// Send a message to the channel indicating the conversation has started
 			await defer.edit( { content: `Created <#${ thread.id }> for the conversation.` } )
-			log.info( "Member '%s' (%s) started conversation thread '%s' (%s).", interaction.user.tag, interaction.user.id, thread.name, thread.id )
+			log.info( "User '%s' (%s) started conversation thread '%s' (%s).", interaction.user.tag, interaction.user.id, thread.name, thread.id )
 
-		// Cannot start a conversation when in a thread
+		// Are we already in a server thread channel?
+		} else if ( interaction.inGuild() && interaction.channel.isThread() ) {
+			await defer.edit( { content: "This command cannot be used within a server thread channel." } )
+			log.warn( "User '%s' (%s) attempted to start conversation while in a server thread channel (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.id )
+
+		// TODO: Are we in DMs?
+		} else if ( interaction.channel.isDMBased() ) {
+			await defer.edit( { content: "Conversations within Direct Messages are not supported yet." } )
+			log.warn( "User '%s' (%s) attempted to start conversation while in direct messages (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.id )
+
+		// No clue where we are...
 		} else {
-			await defer.edit( { content: "This command is only usable in a text channel." } )
-			log.warn( "Member '%s' (%s) attempted to start conversation while not in a text channel (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.id )
+			await defer.edit( { content: "This command is only usable in server text channels or Direct Messages." } )
+			log.warn( "User '%s' (%s) attempted to start conversation while not in a server text channel/direct messages (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.id )
 		}
 
 	// If it is the reset conversation command...
 	} else if ( interaction.options.getSubcommand() == "reset" ) {
 		
-		// Ensure we are in a thread...
-		if ( interaction.channel.isThread() ) {
+		// Are we in a server thread?
+		if ( interaction.inGuild() && interaction.channel.isThread() ) {
 
 			// Ensure this is a conversation thread...
 			if ( conversations.has( interaction.channel.id ) ) {
@@ -204,28 +216,33 @@ export const onInteraction = async ( interaction: Interaction<CacheType> ) => {
 				// Reset the message history back to just the prompt
 				const prompt = conversation.messageHistory[ 0 ]
 				conversation.messageHistory = [ prompt ]
-				log.debug( "Cleared message history for thread '%s' (%s).", interaction.channel.name, interaction.channel.id )
+				log.debug( "Cleared message history for thread '%s' (%s).", channelName, interaction.channel.id )
 
 				// Send a message to the channel indicating the conversation has been reset
 				await interaction.reply( "Conversation reset." )
-				log.info( "Member '%s' (%s) reset conversation in thread '%s' (%s)", interaction.user.tag, interaction.user.id, interaction.channel.name, interaction.channel.id )
+				log.info( "User '%s' (%s) reset conversation in thread '%s' (%s)", interaction.user.tag, interaction.user.id, channelName, interaction.channel.id )
 
 			// Cannot reset a non-conversation thread
 			} else {
 				await interaction.reply( { content: "This thread is not a conversation.", ephemeral: true } )
-				log.warn( "Member '%s' (%s) attempted to reset non-existant conversation in thread '%s' (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.name, interaction.channel.id )
+				log.warn( "User '%s' (%s) attempted to reset non-existant conversation in thread '%s' (%s)!", interaction.user.tag, interaction.user.id, channelName, interaction.channel.id )
 			}
 
-		// Cannot reset a conversation when not in a thread
+		// TODO: Are we in Direct Messages?
+		} else if ( interaction.channel.isDMBased() ) {
+			await interaction.reply( { content: "Conversations within Direct Messages are not supported yet." } )
+			log.warn( "User '%s' (%s) attempted to start conversation while in direct messages (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.id )
+
+		// No clue where we are...
 		} else {
-			await interaction.reply( { content: "This command is only usable from within a conversation thread.", ephemeral: true } )
-			log.warn( "Member '%s' (%s) attempted to reset conversation while not in a thread (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.id )
+			await interaction.reply( { content: "This command is only usable within server thread channels or Direct Messages." } )
+			log.warn( "User '%s' (%s) attempted to reset conversation while not in a server thread channel/direct messages (%s)!", interaction.user.tag, interaction.user.id, interaction.channel.id )
 		}
 
 	// Fallback to unknown command message if its not one of the above commands
 	} else {
 		await interaction.reply( { content: "Unrecognised command.", ephemeral: true } )
-		log.warn( "Member '%s' (%s) ran unrecognised sub-command '%s' (%s)!", interaction.user.tag, interaction.user.id, interaction.options.getSubcommand(), interaction.id )
+		log.warn( "User '%s' (%s) ran unrecognised sub-command '%s' (%s)!", interaction.user.tag, interaction.user.id, interaction.options.getSubcommand(), interaction.id )
 	}
 
 }

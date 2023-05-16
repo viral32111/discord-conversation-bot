@@ -1,5 +1,5 @@
 // Import third-party packages
-import { CacheType, ChannelType, cleanCodeBlockContent, Client, Interaction, Message, Routes } from "discord.js"
+import { AttachmentBuilder, CacheType, ChannelType, cleanCodeBlockContent, Client, DiscordAPIError, Interaction, Message, Routes } from "discord.js"
 import { ChatCompletionRequestMessage } from "openai"
 import log4js from "log4js" // Does not support new import syntax
 
@@ -76,26 +76,51 @@ export const onMessage = async ( message: Message<boolean> ) => {
 		} )
 		log.debug( "Received chat completion for message %d.", conversation.messageHistory.length )
 
-		// Ensure we have a message
+		// Ensure we have a completion message
 		let chatCompletionMessage = chatCompletion.data.choices[ 0 ].message?.content?.trim()
 		if ( chatCompletionMessage == null ) throw new Error( "No message found in chat completion!" )
 		log.info( "Generated chat completion message '%s'.", chatCompletionMessage )
 
-		// Add the message to the conversation history
+		// Add the completion message to the conversation history
 		conversation.messageHistory.push( {
 			role: "assistant",
 			content: chatCompletionMessage,
 		} )
 		log.debug( "Added chat completion message '%s' to conversation history for thread '%s' (%s).", chatCompletionMessage, message.channel.name, message.channel.id )
 
-		// Reply to their message with the completion
-		log.debug( "Replying to message '%s' (%s) from member '%s' (%s) in thread '%s' (%s)...", message.cleanContent, message.id, message.author.tag, message.author.id, message.channel.name, message.channel.id )
-		await message.reply( chatCompletionMessage )
-
-	// React with a sad face if we fail to generate a response
+	// React with a sad face if there was an error generating the response
 	} catch ( error ) {
 		log.error( "Failed to generate chat completion! (%s)", error )
 		await message.react( "😔" )
+	}
+
+	// Get the completion message from the conversation history
+	const chatCompletionMessage = conversation.messageHistory[ conversation.messageHistory.length - 1 ].content
+
+	// Attempt to reply to their message with the completion
+	try {
+		log.debug( "Replying to message '%s' (%s) from member '%s' (%s) in thread '%s' (%s)...", message.cleanContent, message.id, message.author.tag, message.author.id, message.channel.name, message.channel.id )
+		await message.reply( chatCompletionMessage )
+
+	// Something went wrong...
+	} catch ( error ) {
+
+		// Reply with the message as a text file if it is too long
+		if ( error instanceof DiscordAPIError && error.code === 50035 ) { // Invalid Form Body
+			await message.reply( { 
+				content: "The response is in the attached text file as it is too long to send as a regular message.",
+				files: [ new AttachmentBuilder( Buffer.from( chatCompletionMessage ), {
+					name: "chat-completion.txt",
+					description: "Chat completion message.",
+				} ) ]
+			} )
+
+		// React with a crying face if the error is something else
+		} else {
+			log.error( "Failed to reply with chat completion! (%s)", error )
+			await message.react( "😢" )
+		}
+
 	}
 
 }

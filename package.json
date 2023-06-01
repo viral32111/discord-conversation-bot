@@ -14,7 +14,7 @@
 	"private": false,
 	"devDependencies": {
 		"@types/node": "^20.1.0",
-		"eslint": "^8.40.0",
+		"eslint": "^8.41.0",
 		"typescript": "^5.0.4"
 	},
 	"dependencies": {

@@ -96,6 +96,11 @@ export const onMessage = async ( message: Message<boolean> ) => {
 
 	// Get the completion message from the conversation history
 	const chatCompletionMessage = conversation.messageHistory[ conversation.messageHistory.length - 1 ].content
+	if ( !chatCompletionMessage ) {
+		log.error( "Failed to get chat completion message from conversation history!" )
+		await message.react( "⁉️" )
+		return
+	}
 
 	// Attempt to reply to their message with the completion
 	try {

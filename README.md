@@ -1,28 +1,27 @@
 # Discord Conversation Bot
 
-![GitHub CI workflow status](https://img.shields.io/github/actions/workflow/status/viral32111/discord-conversation-bot/ci.yml?label=CI)
-![GitHub CodeQL workflow status](https://img.shields.io/github/actions/workflow/status/viral32111/discord-conversation-bot/codeql.yml?label=CodeQL)
-![GitHub repository size](https://img.shields.io/github/repo-size/viral32111/discord-conversation-bot?label=Size)
+[![CI](https://github.com/viral32111/discord-conversation-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/viral32111/discord-conversation-bot/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/viral32111/discord-conversation-bot/actions/workflows/codeql.yml/badge.svg)](https://github.com/viral32111/discord-conversation-bot/actions/workflows/codeql.yml)
 ![GitHub latest release](https://img.shields.io/github/v/release/viral32111/discord-conversation-bot?label=Latest%20Release)
+![GitHub repository size](https://img.shields.io/github/repo-size/viral32111/discord-conversation-bot?label=Size)
 ![GitHub release downloads](https://img.shields.io/github/downloads/viral32111/discord-conversation-bot/total?label=Downloads)
-![GitHub release date](https://img.shields.io/github/release-date/viral32111/discord-conversation-bot?label=Release%20Date)
-![GitHub last commit](https://img.shields.io/github/last-commit/viral32111/discord-conversation-bot?label=Latest%20Update)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/viral32111/discord-conversation-bot?label=Commits)
 
 This is a bot for Discord that uses [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) (a.k.a. ChatGPT) to have conversations with members in a server.
 
 Model support currently includes [GPT-3.5](https://platform.openai.com/docs/models/gpt-3-5) (`gpt-3.5-turbo`) and [GPT-4](https://platform.openai.com/docs/models/gpt-4) (`gpt-4`).
 
-## Background
+## 📜 Background
 
 I simply made this because it seems like every other developer is experimenting with AI right now, and since [OpenAI recently announced their chat completion API](https://openai.com/blog/introducing-chatgpt-and-whisper-apis), I thought now is probably a better time than never. There's no other motiviation behind this than just wanting an excuse to play around with ChatGPT from a development view.
 
-## Usage
+## 📥 Usage
 
 **NOTE: [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat) is not free, though still quite cheap, and thus requires setting up a recurring billing account.**
 
 **NOTE: The [GPT-4](https://platform.openai.com/docs/models/gpt-4) model is currently in a limited beta, if you have not been granted access then your Discord server members will only be able to use the [GPT-3.5](https://platform.openai.com/docs/models/gpt-3-5) model.**
 
-### Release
+### 📦 Release
 
 1. Download & extract the [latest stable release](https://github.com/viral32111/discord-conversation-bot/releases/latest).
 2. Open a terminal in the newly created directory.
@@ -31,7 +30,7 @@ I simply made this because it seems like every other developer is experimenting 
 5. Launch via `node .`.
 6. Use the `/conversation` slash command in your Discord server.
 
-### Docker
+### 🐳 Docker
 
 1. Download the [latest stable Docker image](https://github.com/viral32111/discord-conversation-bot/pkgs/container/discord-conversation-bot) for your platform.
 2. Create a container via `docker container create --name discord-conversation-bot --interactive --tty --restart on-failure ghcr.io/discord-conversation-bot`.
@@ -40,7 +39,7 @@ I simply made this because it seems like every other developer is experimenting 
 3. Start the container via `docker container start discord-conversation-bot`.
 4. Use the `/conversation` slash command in your Discord server.
 
-## Configuration
+## ⚙️ Configuration
 
 Environment variables are used to configure functionality. The following are required:
 
@@ -48,7 +47,7 @@ Environment variables are used to configure functionality. The following are req
 * ~~`DISCORD_GUILD_ID` should be set to the ID of your server.~~ *Removed in version 1.1.0.*
 * `OPENAI_API_KEY` should be set to your [OpenAI account API key](https://platform.openai.com/account/api-keys).
 
-## Building
+## 🏗️ Building
 
 1. Clone this repository via `git clone https://github.com/viral32111/discord-conversation-bot`.
 2. Open a terminal in the repository's directory.
@@ -57,7 +56,7 @@ Environment variables are used to configure functionality. The following are req
 5. Launch via `npm start`.
 6. Use the `/conversation` slash command in your Discord server.
 
-## Useful Links
+## 🔗 Useful Links
 
 * [Discord.js Documentation](https://discord.js.org/#/docs/discord.js/main/general/welcome)
 * [Discord.js Guide](https://discordjs.guide/creating-your-bot/main-file.html)
@@ -67,7 +66,7 @@ Environment variables are used to configure functionality. The following are req
 * [NPM dotenv package](https://www.npmjs.com/package/dotenv)
 * [NPM openai package](https://www.npmjs.com/package/openai)
 
-## License
+## ⚖️ License
 
 Copyright (C) 2023 [viral32111](https://viral32111.com).
 

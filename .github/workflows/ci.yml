@@ -3,10 +3,7 @@ name: CI
 on:
   push:
     paths:
-      - 'source/**/*'
-      - '*.json'
-      - '*.dockerfile'
-      - '.github/workflows/ci.yml'
+      - '**'
     branches:
       - '**'
     tags:

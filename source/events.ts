@@ -1,6 +1,6 @@
 // Import third-party packages
 import { AttachmentBuilder, CacheType, ChannelType, cleanCodeBlockContent, Client, DiscordAPIError, Interaction, Message, Routes } from "discord.js"
-import { ChatCompletionRequestMessage } from "openai"
+import { ChatCompletionMessage } from "openai/resources/chat/index.js"
 import log4js from "log4js" // Does not support new import syntax
 
 // Import required variables
@@ -16,7 +16,7 @@ interface Conversation {
 	sampleTemperature: number,
 	presencePenalty: number,
 	frequencyPenalty: number,
-	messageHistory: ChatCompletionRequestMessage[]
+	messageHistory: ChatCompletionMessage[]
 }
 
 // Holds chat conversations
@@ -64,7 +64,7 @@ export const onMessage = async ( message: Message<boolean> ) => {
 	// Attempt to generate a response to their message
 	try {
 		log.debug( "Generating chat completion for message %d...", conversation.messageHistory.length )
-		const chatCompletion = await openAI.createChatCompletion( {
+		const chatCompletion = await openAI.chat.completions.create( {
 			model: conversation.modelIdentifier,
 			messages: conversation.messageHistory,
 			temperature: conversation.sampleTemperature,
@@ -77,7 +77,7 @@ export const onMessage = async ( message: Message<boolean> ) => {
 		log.debug( "Received chat completion for message %d.", conversation.messageHistory.length )
 
 		// Ensure we have a completion message
-		let chatCompletionMessage = chatCompletion.data.choices[ 0 ].message?.content?.trim()
+		const chatCompletionMessage = chatCompletion.choices[ 0 ].message?.content?.trim()
 		if ( chatCompletionMessage == null ) throw new Error( "No message found in chat completion!" )
 		log.info( "Generated chat completion message '%s'.", chatCompletionMessage )
 

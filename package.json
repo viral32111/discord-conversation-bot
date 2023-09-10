@@ -18,7 +18,7 @@
 		"typescript": "^5.2.2"
 	},
 	"dependencies": {
-		"discord.js": "^14.12.1",
+		"discord.js": "^14.13.0",
 		"dotenv": "^16.3.1",
 		"log4js": "^6.9.1",
 		"openai": "^3.3.0"

@@ -1,8 +1,8 @@
 // Import third-party packages
 import { ActivityType, Client, Events, GatewayIntentBits, REST, SlashCommandBuilder } from "discord.js"
-import { Configuration, OpenAIApi } from "openai"
 import { config as dotenv } from "dotenv"
 import log4js from "log4js" // Does not support new import syntax
+import OpenAI from "openai"
 
 // Import helper functions & event handlers
 import { ensureEnvironmentVariable } from "./helpers.js"
@@ -43,9 +43,9 @@ log.debug( "All environment variables are present." )
 
 // Create an OpenAI API client
 log.debug( "Creating OpenAI API client..." )
-export const openAI = new OpenAIApi( new Configuration( {
-	apiKey: OPENAI_API_KEY,
-} ) )
+export const openAI = new OpenAI( {
+	apiKey: OPENAI_API_KEY
+} )
 log.info( "Created OpenAI API client." )
 
 // Setup the Discord client

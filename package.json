@@ -20,7 +20,7 @@
 	"private": false,
 	"devDependencies": {
 		"@types/node": "^20.8.2",
-		"eslint": "^8.50.0",
+		"eslint": "^8.52.0",
 		"typescript": "^5.2.2"
 	},
 	"dependencies": {

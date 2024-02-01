@@ -19,7 +19,7 @@
 	"license": "AGPL-3.0-only",
 	"private": false,
 	"devDependencies": {
-		"@types/node": "^20.8.10",
+		"@types/node": "^20.11.16",
 		"eslint": "^8.52.0",
 		"typescript": "^5.2.2"
 	},
